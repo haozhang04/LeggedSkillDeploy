@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<!-- D435 camera xacro for go1_description using Gazebo native libgazebo_ros_camera.so -->
+
+<robot name="sensor_d435" xmlns:xacro="http://ros.org/wiki/xacro">
+  
+  <xacro:macro name="sensor_d435" params="parent *origin name:=camera">
+    <xacro:property name="M_PI" value="3.1415926535897931" />
+
+    <!-- D435 dimensions -->
+    <xacro:property name="d435_cam_width" value="0.090"/>
+    <xacro:property name="d435_cam_height" value="0.025"/>
+    <xacro:property name="d435_cam_depth" value="0.02505"/>
+
+    <!-- camera body link -->
+    <joint name="${name}_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent}"/>
+      <child link="${name}_link" />
+    </joint>
+
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+        <geometry>
+          <mesh filename="package://robot_common/meshes/d435_simplified.stl" />
+        </geometry>
+        <material name="grey">
+          <color rgba="0.5 0.5 0.5 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${d435_cam_depth} ${d435_cam_width} ${d435_cam_height}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.072" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.003881243" ixy="0.0" ixz="0.0" iyy="0.000498940" iyz="0.0" izz="0.003879257" />
+      </inertial>
+    </link>
+
+    <!-- Depth frame -->
+    <joint name="${name}_depth_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}"/>
+      <parent link="${name}_link"/>
+      <child link="${name}_depth_frame"/>
+    </joint>
+    <link name="${name}_depth_frame"/>
+
+    <!-- Color frame -->
+    <joint name="${name}_color_joint" type="fixed">
+      <origin xyz="0 0.015 0" rpy="${-M_PI/2} 0 ${-M_PI/2}"/>
+      <parent link="${name}_link"/>
+      <child link="${name}_color_frame"/>
+    </joint>
+    <link name="${name}_color_frame"/>
+
+    <!-- Depth sensor -->
+    <gazebo reference="${name}_link">
+      <sensor name="${name}_depth" type="depth">
+        <always_on>1</always_on>
+        <update_rate>30</update_rate>
+        <visualize>0</visualize>
+        <camera>
+          <horizontal_fov>1.57</horizontal_fov>
+          <image>
+            <width>320</width>
+            <height>240</height>
+          </image>
+          <clip>
+            <near>0.05</near>
+            <far>10</far>
+          </clip>
+        </camera>
+        <plugin name="${name}_depth_controller" filename="libgazebo_ros_camera.so">
+          <ros>
+            <namespace>${name}</namespace>
+          </ros>
+          <camera_name>depth</camera_name>
+          <frame_name>${name}_depth_frame</frame_name>
+          <min_depth>0.05</min_depth>
+          <max_depth>10.0</max_depth>
+        </plugin>
+      </sensor>
+
+      <!-- Color sensor 1.204277184 -->
+      <sensor name="${name}_color" type="camera">
+        <always_on>1</always_on>
+        <update_rate>30</update_rate>
+        <visualize>1</visualize>
+        <camera>
+          <horizontal_fov>1.57</horizontal_fov>
+          <image>
+            <width>320</width>
+            <height>240</height>
+            <format>RGB_INT8</format>
+          </image>
+          <clip>
+            <near>0.05</near>
+            <far>10</far>
+          </clip>
+        </camera>
+        <plugin name="${name}_color_controller" filename="libgazebo_ros_camera.so">
+          <ros>
+            <namespace>${name}</namespace>
+          </ros>
+          <camera_name>color</camera_name>
+          <frame_name>${name}_color_frame</frame_name>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+</robot>

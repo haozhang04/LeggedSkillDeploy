@@ -1,0 +1,37 @@
+# Copyright (c) 2024-2025 zh
+
+duow:
+  model_names:
+    - "Mar19_09-34-46_lc.pt" # old vel action 10 20 0.5
+
+  dt: 0.005
+  decimation: 4
+  num_of_dofs: 8
+  num_observations: 33
+  observations: ["commands", "ang_vel", "gravity_vec", "dof_pos", "dof_vel", "actions"]
+  observations_history: [5, 4, 3, 2, 1, 0]
+  clip_obs: 100.0
+  fixed_kp: [40, 40, 40, 0,
+             40, 40, 40, 0]
+  fixed_kd: [1, 1, 1, 1,
+             1, 1, 1, 1]
+  rl_kp: [20, 20, 20, 0,
+          20, 20, 20, 0]
+  rl_kd: [0.5, 0.5, 0.5, 0.5,
+          0.5, 0.5, 0.5, 0.5]
+#   action_scale:  [0.25, 0.25, 0.25, 5.0,
+#                   0.25, 0.25, 0.25, 5.0]
+  action_scale:  [0.25, 0.25, 0.25, 10.0,
+                  0.25, 0.25, 0.25, 10.0]
+  wheel_indices: [3, 7]
+  ang_vel_scale: 0.25
+  dof_pos_scale: 1.0
+  dof_vel_scale: 0.05
+  commands_scale: [2.0, 2.0, 0.25]
+  torque_limits: [40, 40, 40, 40,
+                  40, 40, 40, 40]
+  default_dof_pos: [ 0.0, 0.8, -1.5, 0.0,
+                     0.0, 0.8, -1.5, 0.0]
+  joint_controller_names: ['FL_hip_joint', 'FL_thigh_joint', 'FL_calf_joint', 'FL_foot_joint',
+                           'FR_hip_joint', 'FR_thigh_joint', 'FR_calf_joint', 'FR_foot_joint']
+  joint_mapping: [0, 1, 2, 3, 4, 5, 6, 7]

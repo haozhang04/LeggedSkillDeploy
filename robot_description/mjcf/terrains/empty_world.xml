@@ -1,0 +1,58 @@
+<mujoco model="empty_world">
+
+  <statistic center="0 0 0.1" extent="0.8"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="-130" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <texture type="2d" name="wood_tex" builtin="flat" rgb1="0.55 0.35 0.2" width="512" height="512"/>
+    <material name="wood_mat" texture="wood_tex" specular="0.2" shininess="0.1" rgba="1 1 1 1"/>
+    <texture type="2d" name="label_30cm_tex" file="textures/30cm.png"/>
+    <texture type="2d" name="label_40cm_tex" file="textures/40cm.png"/>
+    <texture type="2d" name="label_60cm_tex" file="textures/60cm.png"/>
+    <texture type="2d" name="label_80cm_tex" file="textures/80cm.png"/>
+    <texture type="2d" name="label_90cm_tex" file="textures/90cm.png"/>
+    <material name="label_30cm_mat" texture="label_30cm_tex" texuniform="true" emission="0.15" specular="0" shininess="0"/>
+    <material name="label_40cm_mat" texture="label_40cm_tex" texuniform="true" emission="0.15" specular="0" shininess="0"/>
+    <material name="label_60cm_mat" texture="label_60cm_tex" texuniform="true" emission="0.15" specular="0" shininess="0"/>
+    <material name="label_80cm_mat" texture="label_80cm_tex" texuniform="true" emission="0.15" specular="0" shininess="0"/>
+    <material name="label_90cm_mat" texture="label_90cm_tex" texuniform="true" emission="0.15" specular="0" shininess="0"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+
+    <geom pos="1.0 3 0.15" type="box"  size="1.0 1.0 0.15" quat="1.0 0 0 0" rgba="0.20 0.62 0.95 1"/>
+    <geom pos="1.0 3 0.303" type="box" size="0.45 0.18 0.002" quat="1.0 0 0 0" material="label_30cm_mat" contype="0" conaffinity="0"/>
+    <geom pos="-1.0 3.0 0.20" type="box"  size="1.0 1.0 0.20" quat="1.0 0 0 0" rgba="0.15 0.72 0.45 1"/>
+    <geom pos="-1.0 3.0 0.403" type="box" size="0.45 0.18 0.002" quat="1.0 0 0 0" material="label_40cm_mat" contype="0" conaffinity="0"/>
+    <geom pos="-3.0 3.0 0.30" type="box"  size="1.0 1.0 0.30" quat="1.0 0 0 0" rgba="0.95 0.58 0.18 1"/>
+    <geom pos="-3.0 3.0 0.603" type="box" size="0.45 0.18 0.002" quat="1.0 0 0 0" material="label_60cm_mat" contype="0" conaffinity="0"/>
+    <geom pos="-5.0 3.0 0.40" type="box"  size="1.0 1.0 0.40" quat="1.0 0 0 0" rgba="0.78 0.45 0.95 1"/>
+    <geom pos="-5.0 3.0 0.803" type="box" size="0.45 0.18 0.002" quat="1.0 0 0 0" material="label_80cm_mat" contype="0" conaffinity="0"/>
+    <geom pos="-7.0 3.0 0.45" type="box"  size="1.0 1.0 0.45" quat="1.0 0 0 0" rgba="0.95 0.22 0.36 1"/>
+    <geom pos="-7.0 3.0 0.903" type="box" size="0.45 0.18 0.002" quat="1.0 0 0 0" material="label_90cm_mat" contype="0" conaffinity="0"/>
+
+    <!-- <geom pos="1.2 0 0.04" type="box"  size="0.1 2 0.04" quat="1.0 0 0 0"/>
+    <geom pos="1.6 0 0.04" type="box"  size="0.1 2 0.04" quat="1.0 0 0 0"/> -->
+
+    <geom pos="2.3 0 0.02" type="box"  size="0.2 2 0.15" quat="1.0 0 0 0" material="wood_mat"/>
+    <geom pos="2.6 0 0.02" type="box"  size="0.22 2 0.3" quat="1.0 0 0 0" material="wood_mat"/>
+    <geom pos="2.8 0 0.02" type="box"  size="0.23 2 0.45" quat="1.0 0 0 0" material="wood_mat"/>
+    <geom pos="3 0 0.02" type="box"  size="0.24 2 0.6" quat="1.0 0 0 0" material="wood_mat"/>
+    <geom pos="3.2 0 0.02" type="box"  size="0.25 2 0.75" quat="1.0 0 0 0" material="wood_mat"/>
+    <geom pos="3.4 0 0.02" type="box"  size="0.26 2 0.9" quat="1.0 0 0 0" material="wood_mat"/>
+
+    <geom pos="5.13 0 0.28" type="box" size="1.6 2 0.1" quat="0.98481 0 0.17365 0" material="wood_mat"/>
+
+  </worldbody>
+</mujoco>

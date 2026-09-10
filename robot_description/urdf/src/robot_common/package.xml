@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>robot_common</name>
+  <version>1.0.0</version>
+  <description>Shared ROS 2 description assets for Unitree robots.</description>
+  <maintainer email="zh@example.com">zh</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>xacro</depend>
+  <depend>gazebo_ros</depend>
+  <depend>gazebo_ros2_control</depend>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path="${prefix}/.."/>
+  </export>
+</package>

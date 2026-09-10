@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>go1_description</name>
+  <version>1.0.0</version>
+  <description>The go1_description package</description>
+  <maintainer email="zh@example.com">zh</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>urdf</depend>
+  <depend>xacro</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>joint_state_publisher</depend>
+  <depend>gazebo_ros</depend>
+  <depend>gazebo_ros2_control</depend>
+  <depend>effort_controllers</depend>
+  <depend>joint_state_broadcaster</depend>
+  <depend>imu_sensor_broadcaster</depend>
+  <depend>robot_common</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path="${prefix}/.."/>
+  </export>
+</package>

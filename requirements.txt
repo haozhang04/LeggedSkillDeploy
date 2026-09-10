@@ -1,0 +1,13 @@
+crcmod==1.7
+numpy>=1.20.0,<2.3.0
+torch>=1.10.0
+mujoco>=3.0.0
+dm_control
+imageio[ffmpeg]>=2.31.0
+pynput
+inputs
+PyYAML
+PySDL2
+pysdl2-dll; sys_platform == 'win32'
+rich
+aiohttp

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<robot name="go2w_description" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="$(find go2w_description)/urdf/go2w_description.urdf"/>
+    <xacro:include filename="$(find go2w_description)/xacro/gazebo.xacro"/>
+    <xacro:include filename="$(find robot_common)/xacro/d435.xacro"/>
+    <!-- <xacro:include filename="$(find robot_common)/xacro/mid360.xacro"/> -->
+
+    <!-- D435 camera -->
+    <xacro:sensor_d435 parent="trunk" name="camera">
+        <origin xyz="0.24 0 0.12" rpy="0 0 0"/>
+    </xacro:sensor_d435>
+
+    <!-- Livox Mid360 LiDAR -->
+    <!-- <xacro:sensor_mid360 parent="trunk" name="mid360">
+        <origin xyz="0.19 0 0.15" rpy="0 0 0"/>
+    </xacro:sensor_mid360> -->
+    
+</robot>

@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<!-- MID-360-like 3D LiDAR for Gazebo Classic + ROS2 Humble
+     - Publishes sensor_msgs/PointCloud2 via libgazebo_ros_ray_sensor.so
+     - FOV: 360° horizontal, 59° vertical (-7°~52°)
+     - Rate: 10Hz, ~200k points/s (64 x 320 x 10 = 204,800)
+-->
+
+<robot name="sensor_mid360" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="sensor_mid360" params="parent *origin name:=mid360 ">
+    <xacro:property name="M_PI" value="3.1415926535897931"/>
+
+    <xacro:property name="v_min" value="${-7.0 * M_PI / 180.0}"/>
+    <xacro:property name="v_max" value="${ 52.0 * M_PI / 180.0}"/>
+    <xacro:property name="hz" value="10"/>
+    <xacro:property name="h_samples" value="320"/>  
+    <xacro:property name="v_samples" value="64"/> 
+    <xacro:property name="range_min" value="0.1"/>
+    <xacro:property name="range_max" value="40.0"/>
+
+    <joint name="${name}_joint" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}"/>
+      <child link="${name}_link"/>
+    </joint>
+
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.035" length="0.06"/>
+        </geometry>
+        <material name="red">
+          <color rgba="1.0 0.0 0.0 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.035" length="0.06"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.3"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+      </inertial>
+    </link>
+
+    <link name="${name}_frame"/>
+    <joint name="${name}_frame_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${name}_link"/>
+      <child link="${name}_frame"/>
+    </joint>
+
+    <gazebo reference="${name}_link">
+      <sensor name="${name}_lidar" type="gpu_ray">
+        <always_on>1</always_on>
+        <update_rate>${hz}</update_rate>
+        <visualize>0</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>${h_samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>${-M_PI}</min_angle>
+              <max_angle>${ M_PI}</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>${v_samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>${v_min}</min_angle>
+              <max_angle>${v_max}</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>${range_min}</min>
+            <max>${range_max}</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </ray>
+        <plugin name="${name}_ray_plugin" filename="libgazebo_ros_ray_sensor.so">
+          <ros>
+            <remapping>~/out:=/livox/lidar</remapping>
+          </ros>
+          <output_type>sensor_msgs/PointCloud2</output_type>
+          <frame_name>${name}_frame</frame_name>
+          <min_intensity>0.0</min_intensity>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+</robot>

@@ -1,0 +1,193 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:include filename="$(find robot_common)/xacro/gazebo_plugins.xacro"/>
+    <xacro:property name="hip_torque_max" value="23.7"/>
+    <xacro:property name="thigh_torque_max" value="23.7"/>
+    <xacro:property name="calf_torque_max" value="35.55"/>
+
+  <!-- ──────────────────────── Gazebo plugins ──────────────────────────── -->
+    <!-- imu -->
+    <xacro:gazebo_imu_sensor reference="imu_link"/>
+
+    <!-- pose -->
+    <xacro:gazebo_p3d body_name="base"/>
+
+    <!-- Show the trajectory of trunk center. -->
+    <xacro:gazebo_link_plot_3d link="base" material="Gazebo/Yellow"/>
+
+  <!-- ──────────────────────── ros2_control ──────────────────────────── -->
+  
+    <ros2_control name="GazeboSystem" type="system">
+        <hardware>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+
+        <xacro:macro name="joint_interface" params="joint_name torque_limit">
+            <joint name="${joint_name}">
+            <command_interface name="effort">
+                <param name="min">-${torque_limit}</param>
+                <param name="max">${torque_limit}</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+            </joint>
+        </xacro:macro>
+
+        <xacro:macro name="leg_joints" params="prefix">
+            <xacro:joint_interface joint_name="${prefix}_hip_joint" torque_limit="${hip_torque_max}"/>
+            <xacro:joint_interface joint_name="${prefix}_thigh_joint" torque_limit="${thigh_torque_max}"/>
+            <xacro:joint_interface joint_name="${prefix}_calf_joint" torque_limit="${calf_torque_max}"/>
+            <xacro:joint_interface joint_name="${prefix}_foot_joint" torque_limit="${calf_torque_max}"/>
+        </xacro:macro>
+
+        <xacro:leg_joints prefix="FR"/>
+        <xacro:leg_joints prefix="FL"/>
+        <xacro:leg_joints prefix="RR"/>
+        <xacro:leg_joints prefix="RL"/>
+
+    </ros2_control>
+
+    <gazebo>
+        <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+            <parameters>$(find go2w_description)/config/go2w_control_ros2.yaml</parameters>
+        </plugin>
+    </gazebo>
+
+    <gazebo reference="base">
+        <material>Gazebo/Green</material>
+        <turnGravityOff>false</turnGravityOff>
+    </gazebo>
+
+    <gazebo reference="trunk">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+
+    <gazebo reference="stick_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/White</material>
+    </gazebo>
+
+    <gazebo reference="imu_link">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+    <!-- FL leg -->
+    <gazebo reference="FL_hip">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+    </gazebo>
+    <gazebo reference="FL_thigh">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <self_collide>1</self_collide>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+    <gazebo reference="FL_calf">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <self_collide>1</self_collide>
+    </gazebo>
+    <gazebo reference="FL_foot">
+        <mu1>0.6</mu1>
+        <mu2>0.6</mu2>
+        <self_collide>1</self_collide>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+
+    <!-- FR leg -->
+    <gazebo reference="FR_hip">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+    </gazebo>
+    <gazebo reference="FR_thigh">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <self_collide>1</self_collide>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+    <gazebo reference="FR_calf">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <self_collide>1</self_collide>
+    </gazebo>
+    <gazebo reference="FR_foot">
+        <mu1>0.6</mu1>
+        <mu2>0.6</mu2>
+        <self_collide>1</self_collide>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+
+    <!-- RL leg -->
+    <gazebo reference="RL_hip">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+    </gazebo>
+    <gazebo reference="RL_thigh">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <self_collide>1</self_collide>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+    <gazebo reference="RL_calf">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <self_collide>1</self_collide>
+    </gazebo>
+    <gazebo reference="RL_foot">
+        <mu1>0.6</mu1>
+        <mu2>0.6</mu2>
+        <self_collide>1</self_collide>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+
+    <!-- RR leg -->
+    <gazebo reference="RR_hip">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+    </gazebo>
+    <gazebo reference="RR_thigh">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <self_collide>1</self_collide>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+    <gazebo reference="RR_calf">
+        <mu1>0.2</mu1>
+        <mu2>0.2</mu2>
+        <self_collide>1</self_collide>
+    </gazebo>
+    <gazebo reference="RR_foot">
+        <mu1>0.6</mu1>
+        <mu2>0.6</mu2>
+        <self_collide>1</self_collide>
+        <!-- <material>Gazebo/DarkGrey</material> -->
+        <kp  value="1000000.0"/>
+        <kd  value="1.0"/>
+    </gazebo>
+
+</robot>

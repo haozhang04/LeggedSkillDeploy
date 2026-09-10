@@ -1,0 +1,64 @@
+# Copyright (c) 2024-2025 zh
+
+go2w_himloco:
+  model_names: 
+    - "May07_21-38-45_lc.pt"             # locomotion
+    - "May09_00-04-51_lc_stand_front.pt" # locomotion
+    - "May09_15-08-14_hs.pt"             # handstand
+    - "May09_17-24-55_ls.pt"             # leggedstand
+
+  dt: 0.005
+  decimation: 4
+  num_of_dofs: 16
+  num_observations: 57
+  observations: ["commands", "ang_vel", "gravity_vec", "dof_pos", "dof_vel", "actions"]
+  # observations: ["ang_vel", "gravity_vec", "commands", "dof_pos", "dof_vel", "actions"]
+  observations_history: [5, 4, 3, 2, 1, 0]
+  clip_obs: 100.0
+  fixed_kp: [40.0, 40.0, 40.0, 0.0,
+             40.0, 40.0, 40.0, 0.0,
+             40.0, 40.0, 40.0, 0.0,
+             40.0, 40.0, 40.0, 0.0]
+  fixed_kd: [1.0, 1.0, 1.0, 1.0,
+             1.0, 1.0, 1.0, 1.0,
+             1.0, 1.0, 1.0, 1.0,
+             1.0, 1.0, 1.0, 1.0] 
+  # rl_kp: [40.0, 40.0, 40.0, 0.0,
+  #         40.0, 40.0, 40.0, 0.0,
+  #         40.0, 40.0, 40.0, 0.0,
+  #         40.0, 40.0, 40.0, 0.0]
+  # rl_kd: [1.0, 1.0, 1.0, 0.5,
+  #         1.0, 1.0, 1.0, 0.5,
+  #         1.0, 1.0, 1.0, 0.5,
+  #         1.0, 1.0, 1.0, 0.5] 
+  rl_kp: [20.0, 20.0, 20.0, 0.0,
+          20.0, 20.0, 20.0, 0.0,
+          20.0, 20.0, 20.0, 0.0,
+          20.0, 20.0, 20.0, 0.0]
+  rl_kd: [0.5, 0.5, 0.5, 0.5,
+          0.5, 0.5, 0.5, 0.5,
+          0.5, 0.5, 0.5, 0.5,
+          0.5, 0.5, 0.5, 0.5] 
+  action_scale: [0.25, 0.25, 0.25, 5.0,
+                 0.25, 0.25, 0.25, 5.0,
+                 0.25, 0.25, 0.25, 5.0,
+                 0.25, 0.25, 0.25, 5.0]
+  wheel_indices: [3, 7, 11, 15]
+  ang_vel_scale: 0.25
+  dof_pos_scale: 1.0
+  dof_vel_scale: 0.05
+  commands_scale: [2.0, 2.0, 0.25]
+  torque_limits: [33.5, 33.5, 33.5, 33.5,
+                  33.5, 33.5, 33.5, 33.5,
+                  33.5, 33.5, 33.5, 33.5,
+                  33.5, 33.5, 33.5, 33.5]
+  default_dof_pos: [0.0, 0.8, -1.5, 0.0, 
+                    0.0, 0.8, -1.5, 0.0, 
+                    0.0, 0.8, -1.5, 0.0, 
+                    0.0, 0.8, -1.5, 0.0]
+  joint_controller_names: ["FR_hip_joint", "FR_thigh_joint", "FR_calf_joint", "FR_foot_joint",
+                           "FL_hip_joint", "FL_thigh_joint", "FL_calf_joint", "FL_foot_joint",
+                           "RR_hip_joint", "RR_thigh_joint", "RR_calf_joint", "RR_foot_joint",
+                           "RL_hip_joint", "RL_thigh_joint", "RL_calf_joint", "RL_foot_joint"]
+  joint_mapping: [4, 5, 6, 7, 0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11]
+  # joint_mapping: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]

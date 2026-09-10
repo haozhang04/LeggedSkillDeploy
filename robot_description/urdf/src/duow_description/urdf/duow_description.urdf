@@ -1,0 +1,603 @@
+<?xml version="1.0" ?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+
+<robot name="duow">
+
+  <material name="black">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+  <material name="blue">
+    <color rgba="0.0 0.0 0.8 1.0"/>
+  </material>
+  <material name="green">
+    <color rgba="0.0 0.8 0.0 1.0"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="silver">
+    <color rgba="0.9137254901960784 0.9137254901960784 0.8470588235294118 1.0"/>
+  </material>
+  <material name="orange">
+    <color rgba="1.0 0.4235294117647059 0.0392156862745098 1.0"/>
+  </material>
+  <material name="brown">
+    <color rgba="0.8705882352941177 0.8117647058823529 0.7647058823529411 1.0"/>
+  </material>
+  <material name="red">
+    <color rgba="0.8 0.0 0.0 1.0"/>
+  </material>
+  <material name="white">
+    <color rgba="1.0 1.0 1.0 1.0"/>
+  </material>
+
+  <link name="base">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.0001" />
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="imu_link">
+    <inertial>
+      <origin xyz="0.0188 0 0.0095" rpy="0 0 0" />
+      <mass value="0.123" />
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size=".001 .001 .001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+    <origin xyz="0.01153 0 0.068" rpy="0 0 0" />
+    <parent link="base" />
+    <child link="imu_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <link name="F_base_link">
+    <inertial>
+      <origin
+        xyz="-0.0031 -0.0 0.0198"
+        rpy="0 0 0" />
+      <mass
+        value="6.0608" />
+      <inertia
+        ixx="0.028"
+        ixy="-0.0006"
+        ixz="0.0013"
+        iyy="0.0805"
+        iyz="0.0001"
+        izz="0.0866" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://duow_description/meshes/F_base_link.STL" />
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.022"/>
+      <geometry>
+        <box size="0.3505 0.198 0.152"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="F_base_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base" />
+    <child link="F_base_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <link name="FL_hip">
+    <inertial>
+      <origin
+        xyz="0.0315 0 -0.0546"
+        rpy="0 0 0" />
+      <mass
+        value="0.755" />
+      <inertia
+        ixx="0.0009"
+        ixy="0"
+        ixz="0"
+        iyy="0.0008"
+        iyz="0"
+        izz="0.0006" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://duow_description/meshes/FL_hip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="FL_hip_joint" type="revolute">
+    <origin xyz="0.05525 0.048 0" rpy="1.5708 0 1.5708" />
+    <parent link="F_base_link" />
+    <child link="FL_hip" />
+    <axis xyz="0 0 1" />
+    <limit
+      lower="-0.61"
+      upper="0.36"
+      effort="36"
+      velocity="42" />
+  </joint>
+
+  <link name="FL_thigh">
+    <inertial>
+      <origin
+        xyz="0.1906 0.0002 0.021"
+        rpy="0 0 0" />
+      <mass
+        value="0.9375" />
+      <inertia
+        ixx="0.0007"
+        ixy="0"
+        ixz="0"
+        iyy="0.0063"
+        iyz="0"
+        izz="0.0066" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://duow_description/meshes/FL_thigh.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin rpy="0 0 0" xyz="0.08 0 0.026"/>
+      <geometry>
+        <box size="0.236 0.070 0.020"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.23 0 0.0175"/>
+      <geometry>
+        <cylinder length="0.051" radius="0.047"/>
+      </geometry>
+    </collision> -->
+  </link>
+
+  <joint name="FL_thigh_joint" type="revolute">
+    <origin xyz="0.0525 0 -0.05525" rpy="-1.5708 0 -1.5708" />
+    <parent link="FL_hip" />
+    <child link="FL_thigh" />
+    <axis xyz="0 0 1" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="36"
+      velocity="42" />
+  </joint>
+
+  <link name="FL_calf">
+    <inertial>
+      <origin
+        xyz="0.1793 0 0.0108"
+        rpy="0 0 0" />
+      <mass
+        value="0.6055" />
+      <inertia
+        ixx="0.0003"
+        ixy="0"
+        ixz="0.0001"
+        iyy="0.0038"
+        iyz="0"
+        izz="0.0039" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://duow_description/meshes/FL_calf.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.075 0 0.015"/>
+      <geometry>
+        <box size="0.218 0.060 0.015"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.218 0 0.0095"/>
+      <geometry>
+        <cylinder length="0.0435" radius="0.042"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="FL_calf_joint" type="revolute">
+    <origin xyz="0.23 0 0.0415" rpy="0 0 0" />
+    <parent link="FL_thigh" />
+    <child link="FL_calf" />
+    <axis xyz="0 0 1" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="36"
+      velocity="42" />
+  </joint>
+
+  <link name="FL_foot">
+    <inertial>
+      <origin
+        xyz="0 0 0.0227"
+        rpy="0 0 0" />
+      <mass
+        value="0.5134" />
+      <inertia
+        ixx="0.0013"
+        ixy="0"
+        ixz="0"
+        iyy="0.0013"
+        iyz="0"
+        izz="0.0024" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://duow_description/meshes/FL_foot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.86667 0.9098 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.0235"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="FL_foot_joint" type="revolute">
+    <origin xyz="0.22 0 0.0315" rpy="0 0 0" />
+    <parent link="FL_calf" />
+    <child link="FL_foot" />
+    <axis xyz="0 0 1" />
+    <limit
+      lower="-1000000.0"
+      upper="1000000.0"
+      effort="17"
+      velocity="42" />
+  </joint>
+
+  <transmission name="FL_hip_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="FL_hip_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="FL_hip_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="FL_thigh_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="FL_thigh_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="FL_thigh_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="FL_calf_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="FL_calf_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="FL_calf_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="FL_foot_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="FL_foot_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="FL_foot_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <link name="FR_hip">
+    <inertial>
+      <origin
+        xyz="-0.0315 0 -0.0546"
+        rpy="0 0 0" />
+      <mass
+        value="0.755" />
+      <inertia
+        ixx="0.0009"
+        ixy="0"
+        ixz="0"
+        iyy="0.0008"
+        iyz="0"
+        izz="0.0006" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://duow_description/meshes/FR_hip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="FR_hip_joint" type="revolute">
+    <origin xyz="0.05525 -0.048 0" rpy="1.5708 0 1.5708" />
+    <parent link="F_base_link" />
+    <child link="FR_hip" />
+    <axis xyz="0 0 1" />
+    <limit
+      lower="-0.36"
+      upper="0.61"
+      effort="36"
+      velocity="42" />
+  </joint>
+
+  <link name="FR_thigh">
+    <inertial>
+      <origin
+        xyz="0.1906 0.0001 -0.021"
+        rpy="0 0 0" />
+      <mass
+        value="0.9375" />
+      <inertia
+        ixx="0.0007"
+        ixy="0"
+        ixz="0"
+        iyy="0.0063"
+        iyz="0"
+        izz="0.0066" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://duow_description/meshes/FR_thigh.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.86667 0.9098 1 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin rpy="0 0 0" xyz="0.08 0 -0.026"/>
+      <geometry>
+        <box size="0.236 0.070 0.020"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.23 0 -0.0175"/>
+      <geometry>
+        <cylinder length="0.051" radius="0.047"/>
+      </geometry>
+    </collision> -->
+  </link>
+
+  <joint name="FR_thigh_joint" type="revolute">
+    <origin xyz="-0.0525 0 -0.05525" rpy="-1.5708 0 -1.5708" />
+    <parent link="FR_hip" />
+    <child link="FR_thigh" />
+    <axis xyz="0 0 1" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="36"
+      velocity="42" />
+  </joint>
+
+  <link name="FR_calf">
+    <inertial>
+      <origin
+        xyz="0.1793 0 -0.0108"
+        rpy="0 0 0" />
+      <mass
+        value="0.6055" />
+      <inertia
+        ixx="0.0003"
+        ixy="0"
+        ixz="-0.0001"
+        iyy="0.0038"
+        iyz="0"
+        izz="0.0039" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://duow_description/meshes/FR_calf.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.075 0 -0.015"/>
+      <geometry>
+        <box size="0.218 0.060 0.015"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.218 0 -0.0095"/>
+      <geometry>
+        <cylinder length="0.0435" radius="0.042"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="FR_calf_joint" type="revolute">
+    <origin xyz="0.23 0 -0.0415" rpy="0 0 0" />
+    <parent link="FR_thigh" />
+    <child link="FR_calf" />
+    <axis xyz="0 0 1" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="36"
+      velocity="42" />
+  </joint>
+
+  <link name="FR_foot">
+    <inertial>
+      <origin
+        xyz="0 0 -0.0227"
+        rpy="0 0 0" />
+      <mass
+        value="0.5134" />
+      <inertia
+        ixx="0.0013"
+        ixy="0"
+        ixz="0"
+        iyy="0.0013"
+        iyz="0"
+        izz="0.0024" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://duow_description/meshes/FR_foot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.0235"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="FR_foot_joint" type="revolute">
+    <origin xyz="0.22 0 -0.0315" rpy="0 0 0" />
+    <parent link="FR_calf" />
+    <child link="FR_foot" />
+    <axis xyz="0 0 1" />
+    <limit 
+      lower="-1000000.0"
+      upper="1000000.0"
+      effort="17"
+      velocity="42" />
+  </joint>
+
+  <transmission name="FR_hip_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="FR_hip_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="FR_hip_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="FR_thigh_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="FR_thigh_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="FR_thigh_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="FR_calf_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="FR_calf_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="FR_calf_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="FR_foot_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="FR_foot_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="FR_foot_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+</robot>

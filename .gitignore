@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# MuJoCo
+MUJOCO_LOG.TXT
+mjmodel.mjb
+
+# ROS 2 build artifacts
+build/
+install/
+log/
+
+# Editor and local tooling
+.vscode/
+.qoder/
+.omx/
+.codex
+
+# video
+recordings/
