@@ -33,15 +33,15 @@
 
 ---
 
-## 安装配置
-
 ## 1. 创建虚拟环境
 
 使用以下命令创建并激活 conda 虚拟环境：
+
 ```bash
 conda create -n lsd python=3.10
 conda activate lsd
 ```
+
 ---
 
 ## 2. 快速开始
@@ -49,37 +49,48 @@ conda activate lsd
 ### 2.1 克隆 LeggedSkillDeploy
 
 通过 Git 克隆仓库：
+
 ```bash
 git clone https://github.com/haozhang04/LeggedSkillDeploy.git
 ```
 
 ### 2.2 安装依赖
 
-进入目录并安装,这可能需要一些时间：
+进入项目目录并安装依赖。此过程可能需要一些时间：
+
 ```bash
 cd LeggedSkillDeploy
 pip install -r requirements.txt
 ```
 
-### 2.3 运行代码
+### 2.3 运行仿真
 
-#### 2.3.1 运行 MuJoCo 仿真:
+#### 2.3.1 MuJoCo
+
 ```bash
 python src/rl_mujoco.py
 ```
-#### 2.3.2 运行 MuJoCo Glfw 仿真:
+
+#### 2.3.2 MuJoCo GLFW
+
 ```bash
 python src/rl_mujoco_glfw.py
 ```
-#### 2.3.3 运行 Gazebo 仿真:
-需要先编译ros2工作空间:
+
+#### 2.3.3 Gazebo
+
+需要先编译 ROS 2 工作空间：
+
 ```bash
 cd robot_description/urdf && colcon build && cd ../..
 ```
-然后:
+
+然后：
+
 ```bash
 python src/rl_gazebo.py
 ```
+
 ---
 
 ## 3. Policy 说明
@@ -207,6 +218,7 @@ python src/rl_gazebo.py
 ### 4.3 手机 Web 控制
 
 启动程序后，终端会输出手机控制页面地址，手机与电脑连接到同一网络后，在浏览器中打开该地址即可控制。
+
 ```bash
 [PHONE] Web control: http://<电脑IP>:8080/
 ```
@@ -227,17 +239,22 @@ python src/rl_gazebo.py
 - 使用网线连接 Go1 Pro 与电脑。
 - Go1 Pro 机载电脑 IP 为 `192.168.123.161`；请将电脑 IP 设置为 `192.168.123.12`，子网掩码设置为 `255.255.255.0`。
 - 确认可以正常连通：
+
 ```bash
 ping 192.168.123.161
 ```
+
 - 在遥控器上依次执行以下组合键，进入调试模式：
+
 ```bash
 L2 + A
 L2 + A
 L2 + B
 L1 + L2 + START
 ```
+
 - 启动实机部署程序：
+
 ```bash
 python src/rl_real_go1.py
 ```
@@ -245,6 +262,7 @@ python src/rl_real_go1.py
 ### 5.2 适配你的机器人
 
 - 修改 `src/interface/IOReal_go1.py`，完成对应机器人的接口适配。
+
 ---
 
 ## 🙏 致谢
