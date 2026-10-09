@@ -2,9 +2,9 @@
 # Real Go1 robot controller
 
 import time
-from utils.path_config import PROJECT_ROOT
-from src.scripts.rl_sdk import LOGGER
+from src.scripts.rl_data import LOGGER
 from src.interface.IOReal_go1 import IOReal_go1
+from src.interface.depth.ros_depth_subscriber import ROSDepthSubscriber
 from src.scripts.rl_deploy import RLDeploy
 from src.input_dev.xbox_control import XboxControl
 from src.input_dev.keyboard_control import KeyboardControl
@@ -19,16 +19,17 @@ class RealRobot_go1:
         self.control_dt = control_dt
 
         # RL deploy
-        self.rl = RLDeploy(self.policy_names)  
+        self.rl = RLDeploy(self.policy_names)
+        self.depth_subscriber = ROSDepthSubscriber(self.rl.robot_state.depth)
 
         # IO for real robot
         self.io = IOReal_go1()
         
         # Inputs
-        self.keyboard_ctrl = KeyboardControl(self.rl.control)
-        self.xbox_ctrl = XboxControl(self.rl.control)
-        self.phone_ctrl = PhoneWebControl(self.rl.control)
-            
+        # self.keyboard_ctrl = KeyboardControl(self.rl.robot_state.control)
+        self.xbox_ctrl = XboxControl(self.rl.robot_state.control)
+        # self.phone_ctrl = PhoneWebControl(self.rl.robot_state.control)
+
     def run(self):
         """Main loop: single-thread."""
         next_exec_time = time.perf_counter()
@@ -59,6 +60,7 @@ class RealRobot_go1:
                     next_exec_time = now
 
         finally:
+            self.depth_subscriber.close()
             print(f"{LOGGER.INFO}Real robot controller shutdown complete")
 
 
@@ -70,8 +72,9 @@ def main():
     policy_names = [
         # "issacgym/go1/himloco",
         # "issacgym/go1/np3o",
+        "issacgym/go1/go1wmp",
         "issacgym/go1/moe",
-        "issacgym/go1/go1",
+        # "issacgym/go1/go1",
         "issacgym/go1/recoveryloco",
         # "unitree_rl_lab/go2/go2_loco",
         # "unitree_rl_lab/go2/go2_back_filp",
@@ -79,7 +82,7 @@ def main():
         # "unitree_rl_lab/go2/go2_jump",
     ]
     
-    controller = RealRobot_go1(policy_names, control_dt=0.002)
+    controller = RealRobot_go1(policy_names, control_dt=0.001)
     controller.run()
 
 if __name__ == "__main__":

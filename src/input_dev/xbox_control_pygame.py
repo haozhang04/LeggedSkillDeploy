@@ -8,7 +8,7 @@ import threading
 import time
 import pygame
 from dataclasses import dataclass
-from src.scripts.rl_sdk import STATE
+from src.scripts.rl_data import STATE
 
 
 #------------ data----------------

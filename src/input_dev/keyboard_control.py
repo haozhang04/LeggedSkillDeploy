@@ -5,7 +5,7 @@
 """
 
 from pynput import keyboard
-from src.scripts.rl_sdk import STATE
+from src.scripts.rl_data import STATE
 
 
 class KeyboardControl:

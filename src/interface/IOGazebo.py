@@ -2,12 +2,14 @@
 # Gazebo ROS2 通信接口
 
 import threading
+import cv2
 import numpy as np
+import torch
 import rclpy
 from rclpy.node import Node
 from std_srvs.srv import Empty
 from std_msgs.msg import Float64MultiArray
-from sensor_msgs.msg import JointState, Imu
+from sensor_msgs.msg import Image, JointState, Imu
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 from src.utils.helper import PrintHelper
 
@@ -15,17 +17,18 @@ from src.utils.helper import PrintHelper
 class IOGazebo(Node):
     """Gazebo ROS2 接口 独立线程运行"""
 
-    def __init__(self, num_of_dofs, joint_names):
+    def __init__(self, rl):
         # 初始化 ROS2
         if not rclpy.ok():
             rclpy.init()
         
         super().__init__('io_gazebo')
 
-        self.num_of_dofs = num_of_dofs
+        self.rl = rl
+        self.num_of_dofs = rl.params.num_of_dofs
 
         # 关节名称映射
-        self.joint_names = joint_names
+        self.joint_names = rl.params.joint_controller_names
 
         # 状态缓存
         self._lock = threading.Lock()
@@ -36,6 +39,7 @@ class IOGazebo(Node):
         self.imu_quaternion = np.array([1.0, 0.0, 0.0, 0.0])  # w, x, y, z
         self.imu_gyroscope = np.zeros(3)
         self.imu_accelerometer = np.zeros(3)
+        self.depth = rl.robot_state.depth
 
         # 命令缓存
         self.joint_commands = np.zeros(self.num_of_dofs)
@@ -46,6 +50,7 @@ class IOGazebo(Node):
         # ROS2 订阅者
         self.joint_state_sub = self.create_subscription(JointState,'/joint_states',self.joint_state_callback,sensor_qos)
         self.imu_sub = self.create_subscription(Imu,'/IMU_data',self.imu_callback,sensor_qos)
+        self.depth_sub = self.create_subscription(Image, "/camera/depth/depth/image_raw", self.depth_callback, sensor_qos)
 
         # ROS2 发布者
         self.joint_cmd_pub = self.create_publisher(Float64MultiArray,'/robot_joint_controller/commands',10)
@@ -105,8 +110,28 @@ class IOGazebo(Node):
             self.imu_accelerometer[1] = msg.linear_acceleration.y
             self.imu_accelerometer[2] = msg.linear_acceleration.z
 
-    def recv(self, robot_state):
+    def depth_callback(self, msg: Image):
+        """Depth image callback. Expects 32FC1 depth in meters."""
+        if msg.encoding != "32FC1":
+            self.get_logger().error(f"Unsupported depth encoding: {msg.encoding}")
+            return
+
+        row_stride = msg.step // np.dtype(np.float32).itemsize
+        depth_m = np.frombuffer(msg.data, dtype=np.float32).reshape(msg.height, row_stride)[:, : msg.width]
+        near_clip = self.depth.near_clip
+        far_clip = self.depth.far_clip
+        valid = np.isfinite(depth_m) & (depth_m > near_clip)
+        depth_m = np.where(valid, depth_m, far_clip)
+        depth_m = np.clip(depth_m, near_clip, far_clip)
+        depth_m = cv2.resize(depth_m, (self.depth.width, self.depth.height), interpolation=cv2.INTER_NEAREST)
+        depth = (depth_m - near_clip) / (far_clip - near_clip) - 0.5
+
+        depth = depth.astype(np.float32, copy=False)
+        self.depth.image = torch.from_numpy(depth).unsqueeze(0).unsqueeze(0)
+
+    def recv(self):
         """从 Gazebo 接收状态"""
+        robot_state = self.rl.temp_robot_state
         with self._lock:
             # 读取关节状态
             for i in range(self.num_of_dofs):
@@ -124,8 +149,9 @@ class IOGazebo(Node):
 
         # self.helper.print_state(robot_state)
 
-    def send(self, robot_command):
+    def send(self):
         """发送命令到 Gazebo"""
+        robot_command = self.rl.temp_robot_command
         # 读取当前关节状态
         with self._lock:
             q_actual = self.joint_positions.copy()
@@ -157,7 +183,7 @@ class IOGazebo(Node):
             return False
         
         request = Empty.Request()
-        future = self.reset_sim_client.call_async(request)
+        self.reset_sim_client.call_async(request)
         return True
 
     def shutdown(self):

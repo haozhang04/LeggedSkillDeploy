@@ -1,0 +1,468 @@
+<mujoco model="empty_world">
+  <compiler angle="radian"/>
+
+  <statistic center="0 0 0.1" extent="0.8"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6"
+               ambient="0.3 0.3 0.3"
+               specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="-130" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox"
+             builtin="gradient"
+             rgb1="0.3 0.5 0.7"
+             rgb2="0 0 0"
+             width="512"
+             height="3072"/>
+
+    <texture type="2d"
+             name="groundplane"
+             builtin="checker"
+             mark="edge"
+             rgb1="0.2 0.3 0.4"
+             rgb2="0.1 0.2 0.3"
+             markrgb="0.8 0.8 0.8"
+             width="300"
+             height="300"/>
+
+    <material name="groundplane"
+              texture="groundplane"
+              texuniform="true"
+              texrepeat="5 5"
+              reflectance="0.2"/>
+
+    <texture type="2d"
+             name="wood_tex"
+             builtin="flat"
+             rgb1="0.55 0.35 0.2"
+             width="512"
+             height="512"/>
+
+    <material name="wood_mat"
+              texture="wood_tex"
+              specular="0.2"
+              shininess="0.1"
+              rgba="1 1 1 1"/>
+
+    <material name="runway_mat"
+              rgba="0.18 0.55 0.38 1"
+              specular="0.15"
+              shininess="0.2"/>
+  </asset>
+
+  <worldbody>
+
+    <light pos="0 0 1.5"
+           dir="0 0 -1"
+           directional="true"/>
+
+    <!-- 基础底面 -->
+    <geom name="floor"
+          type="plane"
+          pos="0 0 -0.40"
+          size="0 0 0.05"
+          material="groundplane"/>
+
+    <!-- 起点区域 -->
+    <geom name="runway_0"
+          type="box"
+          pos="1.55 0 -0.20"
+          size="6.65 2.0 0.20"
+          material="runway_mat"/>
+
+    <!-- 单 Gap 后至连续小 Gap 前 -->
+    <geom name="runway_1"
+          type="box"
+          pos="17.85 0 -0.20"
+          size="9.25 2.0 0.20"
+          material="runway_mat"/>
+
+    <!-- 连续小 Gap 到独木桥之间 -->
+    <geom name="runway_2"
+          type="box"
+          pos="37.70 0 -0.20"
+          size="1.00 2.0 0.20"
+          material="runway_mat"/>
+
+    <!-- 独木桥后至末端大 Gap 前 -->
+    <geom name="runway_3"
+          type="box"
+          pos="45.525 0 -0.20"
+          size="3.825 2.0 0.20"
+          material="runway_mat"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 1. 匍匐障碍                                            -->
+    <!-- x = [2.2, 3.0]，长度 0.8 m                            -->
+    <!-- ====================================================== -->
+
+    <geom name="crawl_overhead"
+          type="box"
+          pos="2.3 0 0.8"
+          size="0.4 2.0 0.50"
+          material="wood_mat"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 2. 三个高台                                            -->
+    <!-- x = [5.0, 6.2]                                        -->
+    <!-- ====================================================== -->
+
+    <geom name="platform_40cm"
+          type="box"
+          pos="5.6 -1.333 0.20"
+          size="0.6 0.667 0.20"
+          rgba="0.20 0.62 0.95 1"/>
+
+    <geom name="platform_50cm"
+          type="box"
+          pos="5.6 0 0.25"
+          size="0.6 0.667 0.25"
+          rgba="0.16 0.52 0.85 1"/>
+
+    <geom name="platform_60cm"
+          type="box"
+          pos="5.6 1.333 0.30"
+          size="0.6 0.667 0.30"
+          rgba="0.12 0.42 0.75 1"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 3. 单 Gap                                              -->
+    <!-- x = [8.2, 8.6]                                        -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- 4. 10级上下楼梯                                        -->
+    <!-- x = [10.6, 16.9]                                      -->
+    <!-- ====================================================== -->
+
+    <geom name="stair_up_1"
+          type="box"
+          pos="10.75 0 0.10"
+          size="0.15 2.0 0.10"
+          material="wood_mat"/>
+
+    <geom name="stair_up_2"
+          type="box"
+          pos="11.05 0 0.20"
+          size="0.15 2.0 0.20"
+          material="wood_mat"/>
+
+    <geom name="stair_up_3"
+          type="box"
+          pos="11.35 0 0.30"
+          size="0.15 2.0 0.30"
+          material="wood_mat"/>
+
+    <geom name="stair_up_4"
+          type="box"
+          pos="11.65 0 0.40"
+          size="0.15 2.0 0.40"
+          material="wood_mat"/>
+
+    <geom name="stair_up_5"
+          type="box"
+          pos="11.95 0 0.50"
+          size="0.15 2.0 0.50"
+          material="wood_mat"/>
+
+    <geom name="stair_up_6"
+          type="box"
+          pos="12.25 0 0.60"
+          size="0.15 2.0 0.60"
+          material="wood_mat"/>
+
+    <geom name="stair_up_7"
+          type="box"
+          pos="12.55 0 0.70"
+          size="0.15 2.0 0.70"
+          material="wood_mat"/>
+
+    <geom name="stair_up_8"
+          type="box"
+          pos="12.85 0 0.80"
+          size="0.15 2.0 0.80"
+          material="wood_mat"/>
+
+    <geom name="stair_up_9"
+          type="box"
+          pos="13.15 0 0.90"
+          size="0.15 2.0 0.90"
+          material="wood_mat"/>
+
+    <geom name="stair_up_10"
+          type="box"
+          pos="13.45 0 1.00"
+          size="0.15 2.0 1.00"
+          material="wood_mat"/>
+
+    <geom name="stair_top"
+          type="box"
+          pos="13.90 0 1.00"
+          size="0.30 2.0 1.00"
+          material="wood_mat"/>
+
+    <geom name="stair_down_1"
+          type="box"
+          pos="14.35 0 0.90"
+          size="0.15 2.0 0.90"
+          material="wood_mat"/>
+
+    <geom name="stair_down_2"
+          type="box"
+          pos="14.65 0 0.80"
+          size="0.15 2.0 0.80"
+          material="wood_mat"/>
+
+    <geom name="stair_down_3"
+          type="box"
+          pos="14.95 0 0.70"
+          size="0.15 2.0 0.70"
+          material="wood_mat"/>
+
+    <geom name="stair_down_4"
+          type="box"
+          pos="15.25 0 0.60"
+          size="0.15 2.0 0.60"
+          material="wood_mat"/>
+
+    <geom name="stair_down_5"
+          type="box"
+          pos="15.55 0 0.50"
+          size="0.15 2.0 0.50"
+          material="wood_mat"/>
+
+    <geom name="stair_down_6"
+          type="box"
+          pos="15.85 0 0.40"
+          size="0.15 2.0 0.40"
+          material="wood_mat"/>
+
+    <geom name="stair_down_7"
+          type="box"
+          pos="16.15 0 0.30"
+          size="0.15 2.0 0.30"
+          material="wood_mat"/>
+
+    <geom name="stair_down_8"
+          type="box"
+          pos="16.45 0 0.20"
+          size="0.15 2.0 0.20"
+          material="wood_mat"/>
+
+    <geom name="stair_down_9"
+          type="box"
+          pos="16.75 0 0.10"
+          size="0.15 2.0 0.10"
+          material="wood_mat"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 5. 35° 长坡                                            -->
+    <!-- ====================================================== -->
+
+    <geom name="slope_up"
+          type="box"
+          pos="20 0 0.709190"
+          size="1.307842 2.0 0.05"
+          euler="0 -0.610865238 0"
+          rgba="0.95 0.58 0.18 1"/>
+
+    <geom name="slope_top"
+          type="box"
+          pos="22 0 0.750147"
+          size="0.957358 2.0 0.750147"
+          rgba="0.95 0.58 0.18 1"/>
+
+    <geom name="slope_down"
+          type="box"
+          pos="24 0 0.709190"
+          size="1.307842 2.0 0.05"
+          euler="0 0.610865238 0"
+          rgba="0.95 0.58 0.18 1"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 6. 连续小 Gap                                          -->
+    <!-- 共 10 个不同宽度 Gap                                  -->
+    <!-- ====================================================== -->
+
+    <geom name="continuous_gap_start"
+          type="box"
+          pos="28.10 0 -0.20"
+          size="1.00 2.0 0.20"
+          material="runway_mat"/>
+
+    <!-- Gap 1 = 0.18 -->
+    <geom name="continuous_gap_platform_1"
+          type="box"
+          pos="29.48 0 -0.15"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 2 = 0.23 -->
+    <geom name="continuous_gap_platform_2"
+          type="box"
+          pos="30.11 0 -0.23"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 3 = 0.20 -->
+    <geom name="continuous_gap_platform_3"
+          type="box"
+          pos="30.71 0 -0.11"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 4 = 0.31 -->
+    <geom name="continuous_gap_platform_4"
+          type="box"
+          pos="31.42 0 -0.19"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 5 = 0.26 -->
+    <geom name="continuous_gap_platform_5"
+          type="box"
+          pos="32.08 0 -0.25"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 6 = 0.35 -->
+    <geom name="continuous_gap_platform_6"
+          type="box"
+          pos="32.83 0 -0.13"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 7 = 0.29 -->
+    <geom name="continuous_gap_platform_7"
+          type="box"
+          pos="33.52 0 -0.21"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 8 = 0.40 -->
+    <geom name="continuous_gap_platform_8"
+          type="box"
+          pos="34.32 0 -0.09"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 9 = 0.33 -->
+    <geom name="continuous_gap_platform_9"
+          type="box"
+          pos="35.05 0 -0.17"
+          size="0.20 2.0 0.20"
+          material="wood_mat"/>
+
+    <!-- Gap 10 = 0.45 -->
+    <geom name="continuous_gap_end"
+          type="box"
+          pos="36.20 0 -0.20"
+          size="0.50 2.0 0.20"
+          material="runway_mat"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 7. 独木桥                                              -->
+    <!-- ====================================================== -->
+
+    <geom name="balance_beam"
+          type="box"
+          pos="40.20 0 -0.20"
+          size="1.50 0.13 0.20"
+          material="wood_mat"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 8. Stool                                               -->
+    <!-- ====================================================== -->
+
+    <geom name="stool_1_seat"
+          type="box"
+          pos="44.00 0 0.335"
+          size="0.30 0.875 0.035"
+          material="wood_mat"/>
+
+    <geom name="stool_1_left_panel"
+          type="box"
+          pos="44.00 -0.840 0.150"
+          size="0.30 0.035 0.150"
+          material="wood_mat"/>
+
+    <geom name="stool_1_right_panel"
+          type="box"
+          pos="44.00 0.840 0.150"
+          size="0.30 0.035 0.150"
+          material="wood_mat"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 9. 倒 U 圆柱杆                                         -->
+    <!-- ====================================================== -->
+
+    <geom name="stool_bar_top"
+          type="cylinder"
+          pos="46.325 0 0.325"
+          size="0.025 0.875"
+          euler="1.570796327 0 0"
+          material="wood_mat"/>
+
+    <geom name="stool_bar_left"
+          type="cylinder"
+          pos="46.325 -0.850 0.150"
+          size="0.025 0.150"
+          material="wood_mat"/>
+
+    <geom name="stool_bar_right"
+          type="cylinder"
+          pos="46.325 0.850 0.150"
+          size="0.025 0.150"
+          material="wood_mat"/>
+
+
+    <!-- ====================================================== -->
+    <!-- 10. 末端连续大 Gap                                     -->
+    <!-- 倒 U 杆末端约 x = 46.35                              -->
+    <!-- 第一个 Gap 起点 x = 49.35                            -->
+    <!-- 净间距 = 3.0 m                                       -->
+    <!-- ====================================================== -->
+
+    <!-- Gap 1 = 0.50 m -->
+    <geom name="final_gap_platform_1"
+          type="box"
+          pos="50.60 0 -0.20"
+          size="0.75 2.0 0.20"
+          material="runway_mat"/>
+
+    <!-- Gap 2 = 0.60 m -->
+    <geom name="final_gap_platform_2"
+          type="box"
+          pos="52.70 0 -0.20"
+          size="0.75 2.0 0.20"
+          material="runway_mat"/>
+
+    <!-- Gap 3 = 0.70 m -->
+    <geom name="final_gap_platform_3"
+          type="box"
+          pos="54.90 0 -0.20"
+          size="0.75 2.0 0.20"
+          material="runway_mat"/>
+
+    <!-- Gap 4 = 0.80 m -->
+    <geom name="final_gap_platform_4"
+          type="box"
+          pos="57.20 0 -0.20"
+          size="0.75 2.0 0.20"
+          material="runway_mat"/>
+
+  </worldbody>
+</mujoco>

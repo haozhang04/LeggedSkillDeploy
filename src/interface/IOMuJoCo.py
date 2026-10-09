@@ -4,15 +4,17 @@ from src.utils.helper import PrintHelper
 
 
 class IOMuJoCo:
-    def __init__(self, mj_model, mj_data, num_of_dofs):
+    def __init__(self, mj_model, mj_data, rl):
         """Initialize MuJoCo I/O interface"""
         self.mj_model = mj_model
         self.mj_data = mj_data
-        self.num_of_dofs = num_of_dofs
+        self.rl = rl
+        self.num_of_dofs = rl.params.num_of_dofs
         self.helper = PrintHelper(self.num_of_dofs)
 
-    def recv(self, robot_state):
+    def recv(self):
         """Receive state from MuJoCo simulation"""
+        robot_state = self.rl.temp_robot_state
         # Read joint states
         for i in range(self.num_of_dofs):
             robot_state.motor_state.q[i] = float(self.mj_data.sensordata[i])
@@ -38,8 +40,9 @@ class IOMuJoCo:
 
         # self.helper.print_state(robot_state)
 
-    def send(self, robot_command):
+    def send(self):
         """Send commands to MuJoCo simulation"""
+        robot_command = self.rl.temp_robot_command
         # Apply commands
         for i in range(self.num_of_dofs):
             q_actual = self.mj_data.sensordata[i]

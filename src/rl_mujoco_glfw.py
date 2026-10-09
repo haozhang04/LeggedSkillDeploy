@@ -8,8 +8,9 @@ import mujoco
 import numpy as np
 from dm_control import mjcf
 from utils.path_config import MJCF_ROOT
-from src.scripts.rl_sdk import LOGGER, STATE
+from src.scripts.rl_data import LOGGER, STATE
 from src.interface.IOMuJoCo import IOMuJoCo
+from src.interface.depth.mujoco_depth_camera import MuJoCoDepthCamera
 from src.scripts.rl_deploy import RLDeploy
 from src.input_dev.keyboard_control import KeyboardControl
 from src.input_dev.phone_web_control import PhoneWebControl
@@ -38,6 +39,8 @@ class MuJoCoGLFWRobot:
         # Runtime stats
         self._control_counter = 0
         self._render_counter = 0
+        self._depth_counter = 0
+        self._depth_interval = max(1, round(1.0 / 10.0 / render_dt))
         self._control_hz = 0.0
         self._render_fps = 0.0
         self._stats_time = time.perf_counter()
@@ -63,14 +66,15 @@ class MuJoCoGLFWRobot:
 
         # RL deploy
         self.rl = RLDeploy(self.policy_names)
+        self.depth_camera = MuJoCoDepthCamera(self.mj_model, self.mj_data, self.rl)
 
         # IO for MuJoCo simulation
-        self.io = IOMuJoCo(self.mj_model, self.mj_data, self.rl.params.num_of_dofs)
+        self.io = IOMuJoCo(self.mj_model, self.mj_data, self.rl)
 
         # Inputs
-        self.keyboard_ctrl = KeyboardControl(self.rl.control)
-        self.xbox_ctrl = XboxControl(self.rl.control)
-        self.phone_ctrl = PhoneWebControl(self.rl.control)
+        self.keyboard_ctrl = KeyboardControl(self.rl.robot_state.control)
+        self.xbox_ctrl = XboxControl(self.rl.robot_state.control)
+        self.phone_ctrl = PhoneWebControl(self.rl.robot_state.control)
 
     def _init_glfw(self, title, width, height):
         if not glfw.init():
@@ -153,6 +157,7 @@ class MuJoCoGLFWRobot:
 
         mujoco.mjv_updateScene(self.mj_model, self.mj_data, self.opt, None, self.cam, mujoco.mjtCatBit.mjCAT_ALL.value, self.scene)
         self._append_trunk_velocity_viz(self.scene)
+        self.depth_camera.draw_frustum_scene(self.scene)
         mujoco.mjr_render(viewport, self.scene, self.context)
 
         if text:
@@ -252,7 +257,7 @@ class MuJoCoGLFWRobot:
 
     def _overlay_text(self):
         """Compose aligned overlay text shown at top-left."""
-        cmd = self.rl.control
+        cmd = self.rl.robot_state.control
         state_name = cmd.control_state.name.replace("STATE_", "")
         names = self.rl.model_names
         mf = cmd.model_flag
@@ -294,6 +299,10 @@ class MuJoCoGLFWRobot:
             self._stats_time = now
 
     def _render_step(self):
+        self._depth_counter += 1
+        if self._depth_counter >= self._depth_interval:
+            self.depth_camera.update_depth()
+            self._depth_counter = 0
         self._update_trunk_kinematics()
         self.cam.lookat[:] = self.trunk_kinematics["pos"]
         self._render(self._overlay_text())
@@ -311,13 +320,13 @@ class MuJoCoGLFWRobot:
 
     def _handle_special_state(self):
         """Handle states that are outside RLDeploy state machine."""
-        if self.rl.control.control_state == STATE.STATE_RESET_SIMULATION:
-            self.rl.control.control_state = STATE.STATE_WAITING
+        if self.rl.robot_state.control.control_state == STATE.STATE_RESET_SIMULATION:
+            self.rl.robot_state.control.control_state = STATE.STATE_WAITING
             self._reset_simulation()
             return True
 
-        if self.rl.control.control_state == STATE.STATE_TOGGLE_SIMULATION:
-            self.rl.control.control_state = STATE.STATE_WAITING
+        if self.rl.robot_state.control.control_state == STATE.STATE_TOGGLE_SIMULATION:
+            self.rl.robot_state.control.control_state = STATE.STATE_WAITING
             self.paused = not self.paused
             print(f"\n{LOGGER.INFO}Simulation paused={self.paused}")
             return True
@@ -331,9 +340,9 @@ class MuJoCoGLFWRobot:
 
         # Reset control/runtime side to avoid stale commands right after reset.
         # self.rl.running_state = STATE.STATE_WAITING
-        self.rl.control.x = 0.0
-        self.rl.control.y = 0.0
-        self.rl.control.yaw = 0.0
+        self.rl.robot_state.control.x = 0.0
+        self.rl.robot_state.control.y = 0.0
+        self.rl.robot_state.control.yaw = 0.0
         print(f"\n{LOGGER.INFO}MuJoCo simulation reset")
 
     # ---------- main loop ----------
@@ -354,13 +363,13 @@ class MuJoCoGLFWRobot:
                     continue
 
                 # 1) Read latest sim state
-                self.io.recv(self.rl.temp_robot_state)
+                self.io.recv()
 
                 # 2) Run control logic
                 self.rl.step(inference_times)
 
                 # 3) Send commands
-                self.io.send(self.rl.temp_robot_command)
+                self.io.send()
 
                 # 4) Physics step
                 if not self.paused:
@@ -384,6 +393,7 @@ class MuJoCoGLFWRobot:
                     next_exec_time = now
 
         finally:
+            self.depth_camera.close()
             self.video_recorder.stop()
             self._close_window()
             print(f"{LOGGER.INFO}MuJoCo GLFW controller shutdown complete")
@@ -392,18 +402,19 @@ class MuJoCoGLFWRobot:
 def main():
     """Main entry."""
     # Quadruped Robot
-    # policy_names = [
-    #     # "issacgym/go1/himloco",
-    #     # "issacgym/go1/np3o",
-    #     # "issacgym/go1/moe",
-    #     "issacgym/go1/go1",
-    #     # "issacgym/go1/recoveryloco",
-    #     # "unitree_rl_lab/go2/go2_loco",
-    #     "unitree_rl_lab/go2/go2_back_filp",
-    #     "unitree_rl_lab/go2/go2_silde_filp",
-    #     "unitree_rl_lab/go2/go2_jump",
-    # ]
-    # robot_xml = str(MJCF_ROOT / "go1" / "go1.xml")
+    policy_names = [
+        # "issacgym/go1/himloco",
+        # "issacgym/go1/np3o",
+        "issacgym/go1/go1wmp",
+        "issacgym/go1/moe",
+        # "issacgym/go1/go1",
+        "issacgym/go1/recoveryloco",
+        # "unitree_rl_lab/go2/go2_loco",
+        # "unitree_rl_lab/go2/go2_back_filp",
+        # "unitree_rl_lab/go2/go2_silde_filp",
+        # "unitree_rl_lab/go2/go2_jump",
+    ]
+    robot_xml = str(MJCF_ROOT / "go1" / "go1.xml")
     # robot_xml = str(MJCF_ROOT / "go2" / "go2.xml")
 
     # Two wheel legged Robot
@@ -413,13 +424,13 @@ def main():
     # robot_xml = str(MJCF_ROOT / "duow" / "duow.xml")
 
     # Four wheel legged Robot
-    policy_names = [
-        # "issacgym/go2w/go2w_himloco",
-        "issacgym/M20/M20_lab",
-        "issacgym/M20/M20",
-    ]
-    # robot_xml = str(MJCF_ROOT / "go2w" / "go2w.xml")
-    robot_xml = str(MJCF_ROOT / "M20" / "M20.xml")
+    # policy_names = [
+    #     # "issacgym/go2w/go2w_himloco",
+    #     "issacgym/M20/M20_lab",
+    #     "issacgym/M20/M20",
+    # ]
+    # # robot_xml = str(MJCF_ROOT / "go2w" / "go2w.xml")
+    # robot_xml = str(MJCF_ROOT / "M20" / "M20.xml")
 
     # Humanoid Robot
     # policy_names = [
@@ -433,7 +444,8 @@ def main():
 
 
     # Terrain model
-    terrain_xml = str(MJCF_ROOT / "terrains" / "empty_world.xml")
+    terrain_xml = str(MJCF_ROOT / "terrains" / "parkour.xml")
+    # terrain_xml = str(MJCF_ROOT / "terrains" / "empty_world.xml")
     # terrain_xml = str(MJCF_ROOT / "terrains" / "race_track.xml")
 
     controller = MuJoCoGLFWRobot(policy_names, robot_xml, terrain_xml)

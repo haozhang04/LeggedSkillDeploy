@@ -4,7 +4,7 @@
 import time
 import subprocess
 from utils.path_config import URDF_WS
-from src.scripts.rl_sdk import LOGGER, STATE
+from src.scripts.rl_data import LOGGER, STATE
 from src.interface.IOGazebo import IOGazebo
 from src.scripts.rl_deploy import RLDeploy
 from src.input_dev.xbox_control import XboxControl
@@ -31,12 +31,12 @@ class GazeboRobot:
         self.rl = RLDeploy(self.policy_names)
 
         # IO for Gazebo simulation
-        self.io = IOGazebo(self.rl.params.num_of_dofs, self.rl.params.joint_controller_names)
+        self.io = IOGazebo(self.rl)
 
         # Inputs
-        self.keyboard_ctrl = KeyboardControl(self.rl.control)
-        self.xbox_ctrl = XboxControl(self.rl.control)
-        self.phone_ctrl = PhoneWebControl(self.rl.control)
+        self.keyboard_ctrl = KeyboardControl(self.rl.robot_state.control)
+        self.xbox_ctrl = XboxControl(self.rl.robot_state.control)
+        self.phone_ctrl = PhoneWebControl(self.rl.robot_state.control)
 
     def _start_gazebo(self):
         """Start Gazebo in a new terminal."""
@@ -77,13 +77,13 @@ class GazeboRobot:
         try:
             while True:
                 # 1) Read sim state
-                self.io.recv(self.rl.temp_robot_state)
+                self.io.recv()
 
                 # 2) Run control logic
                 self.rl.step(inference_times)
 
                 # 3) Send commands
-                self.io.send(self.rl.temp_robot_command)
+                self.io.send()
 
                 # 4) Handle simulation service requests
                 self._reset_simulation()
@@ -103,9 +103,9 @@ class GazeboRobot:
 
     def _reset_simulation(self):
         """Reset simulation when requested."""
-        if self.rl.control.control_state != STATE.STATE_RESET_SIMULATION:
+        if self.rl.robot_state.control.control_state != STATE.STATE_RESET_SIMULATION:
             return
-        self.rl.control.control_state = STATE.STATE_WAITING
+        self.rl.robot_state.control.control_state = STATE.STATE_WAITING
         self.io.reset_simulation()
 
     def shutdown(self):
@@ -123,22 +123,23 @@ class GazeboRobot:
 def main():
     """Main entry."""
     # Quadruped Robot
-    # policy_names = [
-    #     # "issacgym/go1/himloco",
-    #     # "issacgym/go1/np3o",
-    #     # "issacgym/go1/moe",
-    #     "issacgym/go1/go1",
-    #     # "issacgym/go1/recoveryloco",
-    #     # "unitree_rl_lab/go2/go2_loco",
-    #     "unitree_rl_lab/go2/go2_back_filp",
-    #     "unitree_rl_lab/go2/go2_silde_filp",
-    #     "unitree_rl_lab/go2/go2_jump",
-    # ]
+    policy_names = [
+        # "issacgym/go1/himloco",
+        # "issacgym/go1/np3o",
+        "issacgym/go1/go1wmp",
+        "issacgym/go1/moe",
+        # "issacgym/go1/go1",
+        "issacgym/go1/recoveryloco",
+        # "unitree_rl_lab/go2/go2_loco",
+        # "unitree_rl_lab/go2/go2_back_filp",
+        # "unitree_rl_lab/go2/go2_silde_filp",
+        # "unitree_rl_lab/go2/go2_jump",
+    ]
 
     # Two wheel legged Robot
-    policy_names = [
-        "issacgym/duow/duow",
-    ]
+    # policy_names = [
+    #     "issacgym/duow/duow",
+    # ]
 
     # Four wheel legged Robot
     # policy_names = [
@@ -157,7 +158,7 @@ def main():
     # ]
 
     # Robot name: go1, go2, duow, go2w, m20, g1
-    robot_name = "duow"
+    robot_name = "go1"
 
     controller = GazeboRobot(policy_names, robot_name)
     controller.run()

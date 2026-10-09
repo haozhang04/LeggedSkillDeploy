@@ -7,8 +7,9 @@ import mujoco
 import mujoco.viewer
 from dm_control import mjcf
 from utils.path_config import MJCF_ROOT
-from src.scripts.rl_sdk import LOGGER
+from src.scripts.rl_data import LOGGER
 from src.interface.IOMuJoCo import IOMuJoCo
+from src.interface.depth.mujoco_depth_camera import MuJoCoDepthCamera
 from src.scripts.rl_deploy import RLDeploy
 from src.input_dev.keyboard_control import KeyboardControl
 from src.input_dev.phone_web_control import PhoneWebControl
@@ -27,6 +28,9 @@ class MuJoCoRobot:
         self.policy_names = policy_names
         self.control_dt = control_dt
         self.viewer_counter = 0
+        self.depth_counter = 0
+        self.viewer_interval = max(1, round(1.0 / 50.0 / control_dt))
+        self.depth_interval = max(1, round(1.0 / 10.0 / control_dt))
 
         self.mj_model, self.mj_data, base_link_name = self._load_model(robot_xml, terrain_xml)
         self.mj_model.opt.timestep = self.control_dt
@@ -35,14 +39,15 @@ class MuJoCoRobot:
         
         # RL deploy
         self.rl = RLDeploy(self.policy_names)
+        self.depth_camera = MuJoCoDepthCamera(self.mj_model, self.mj_data, self.rl)
 
         # IO for MuJoCo simulation
-        self.io = IOMuJoCo(self.mj_model, self.mj_data, self.rl.params.num_of_dofs)
+        self.io = IOMuJoCo(self.mj_model, self.mj_data, self.rl)
         
         # Inputs
-        self.keyboard_ctrl = KeyboardControl(self.rl.control)
-        self.xbox_ctrl = XboxControl(self.rl.control)
-        self.phone_ctrl = PhoneWebControl(self.rl.control)
+        self.keyboard_ctrl = KeyboardControl(self.rl.robot_state.control)
+        self.xbox_ctrl = XboxControl(self.rl.robot_state.control)
+        self.phone_ctrl = PhoneWebControl(self.rl.robot_state.control)
     
     def _load_model(self, robot_xml: str, terrain_xml: str):
         """Load terrain and robot, then merge into one model."""
@@ -65,7 +70,7 @@ class MuJoCoRobot:
         
         physics = mjcf.Physics.from_mjcf_model(terrain_mjcf)
         return physics.model.ptr, physics.data.ptr, base_link_name
-            
+
     def run(self):
         """Main loop: single-thread."""
         next_exec_time = time.perf_counter()
@@ -80,23 +85,28 @@ class MuJoCoRobot:
         try:
             while self.mj_viewer.is_running():
                 # 1) Read sim state
-                self.io.recv(self.rl.temp_robot_state)
+                self.io.recv()
 
                 # 2) Run control logic
                 self.rl.step(inference_times)
 
                 # 3) Send commands
-                self.io.send(self.rl.temp_robot_command)
+                self.io.send()
 
                 # 4) Physics step
                 mujoco.mj_step(self.mj_model, self.mj_data)
 
                 # 5) Update viewer
                 self.viewer_counter += 1
-                if self.viewer_counter >= 5:
+                self.depth_counter += 1
+                if self.viewer_counter >= self.viewer_interval:
                     self.mj_viewer.cam.lookat[:] = self.mj_data.xpos[self.trunk_id]
+                    self.depth_camera.draw_frustum(self.mj_viewer)
                     self.mj_viewer.sync()
                     self.viewer_counter = 0
+                if self.depth_counter >= self.depth_interval:
+                    self.depth_camera.update_depth()
+                    self.depth_counter = 0
 
                 # 6) Precise control timing
                 next_exec_time += thread_period
@@ -109,24 +119,26 @@ class MuJoCoRobot:
                     next_exec_time = now
 
         finally:
+            self.depth_camera.close()
             print(f"{LOGGER.INFO}MuJoCo controller shutdown complete")
 
 
 def main():
     """Main entry."""
     # Quadruped Robot
-    # policy_names = [
-    #     # "issacgym/go1/himloco",
-    #     # "issacgym/go1/np3o",
-    #     # "issacgym/go1/moe",
-    #     "issacgym/go1/go1",
-    #     # "issacgym/go1/recoveryloco",
-    #     # "unitree_rl_lab/go2/go2_loco",
-    #     "unitree_rl_lab/go2/go2_back_filp",
-    #     "unitree_rl_lab/go2/go2_silde_filp",
-    #     "unitree_rl_lab/go2/go2_jump",
-    # ]
-    # robot_xml = str(MJCF_ROOT / "go1" / "go1.xml")
+    policy_names = [
+        # "issacgym/go1/himloco",
+        # "issacgym/go1/np3o",
+        "issacgym/go1/go1wmp",
+        "issacgym/go1/moe",
+        # "issacgym/go1/go1",
+        "issacgym/go1/recoveryloco",
+        # "unitree_rl_lab/go2/go2_loco",
+        # "unitree_rl_lab/go2/go2_back_filp",
+        # "unitree_rl_lab/go2/go2_silde_filp",
+        # "unitree_rl_lab/go2/go2_jump",
+    ]
+    robot_xml = str(MJCF_ROOT / "go1" / "go1.xml")
     # robot_xml = str(MJCF_ROOT / "go2" / "go2.xml")
 
     # Two wheel legged Robot
@@ -145,17 +157,18 @@ def main():
     # robot_xml = str(MJCF_ROOT / "M20" / "M20.xml")
 
     # Humanoid Robot
-    policy_names = [
-        "unitree_rl_lab/g1/g1_amp",
-        "unitree_rl_lab/g1/g1_loco",
-        "unitree_rl_lab/g1/dance_102",
-        "unitree_rl_lab/g1/gangnam_style",
-        "unitree_rl_lab/g1/dance1_subject2",
-    ]
-    robot_xml = str(MJCF_ROOT / "g1" / "g1_29dof.xml")
+    # policy_names = [
+    #     "unitree_rl_lab/g1/g1_amp",
+    #     "unitree_rl_lab/g1/g1_loco",
+    #     "unitree_rl_lab/g1/dance_102",
+    #     "unitree_rl_lab/g1/gangnam_style",
+    #     "unitree_rl_lab/g1/dance1_subject2",
+    # ]
+    # robot_xml = str(MJCF_ROOT / "g1" / "g1_29dof.xml")
 
     # Terrain model
-    terrain_xml = str(MJCF_ROOT / "terrains" / "empty_world.xml")
+    terrain_xml = str(MJCF_ROOT / "terrains" / "parkour.xml")
+    # terrain_xml = str(MJCF_ROOT / "terrains" / "empty_world.xml")
     # terrain_xml = str(MJCF_ROOT / "terrains" / "race_track.xml")
 
     controller = MuJoCoRobot(policy_names, robot_xml, terrain_xml)

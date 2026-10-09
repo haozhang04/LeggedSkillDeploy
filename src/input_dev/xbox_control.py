@@ -9,7 +9,7 @@ import threading
 import sdl2
 from enum import Enum
 from dataclasses import dataclass
-from src.scripts.rl_sdk import STATE
+from src.scripts.rl_data import STATE
 
 
 #------------ data----------------

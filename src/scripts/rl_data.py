@@ -1,6 +1,7 @@
 # Copyright (c) 2024-2025 Ziqi Fan
 # SPDX-License-Identifier: Apache-2.0
 
+import torch
 from enum import Enum, auto
 
 
@@ -9,6 +10,17 @@ class LOGGER:
     WARNING = "\033[0;33m[WARNING]\033[0m "
     ERROR = "\033[0;31m[ERROR]\033[0m "
     DEBUG = "\033[0;32m[DEBUG]\033[0m "
+
+
+class STATE(Enum):
+    STATE_WAITING = 0
+    STATE_POS_GETUP = auto()
+    STATE_RL_RUNNING = auto()
+    STATE_POS_GETDOWN = auto()
+    # sim state
+    STATE_RESET_SIMULATION = auto()
+    STATE_TOGGLE_SIMULATION = auto()
+
 
 class RobotCommand:
     def __init__(self):
@@ -26,6 +38,8 @@ class RobotState:
     def __init__(self):
         self.imu = self.IMU()
         self.motor_state = self.MotorState()
+        self.control = self.Control()
+        self.depth = self.Depth()
 
     class IMU:
         def __init__(self):
@@ -41,22 +55,22 @@ class RobotState:
             self.tau_est = [0.0] * 32
             self.cur = [0.0] * 32
 
-class STATE(Enum):
-    STATE_WAITING = 0
-    STATE_POS_GETUP = auto()
-    STATE_RL_RUNNING = auto()
-    STATE_POS_GETDOWN = auto()
-    # sim state
-    STATE_RESET_SIMULATION = auto()
-    STATE_TOGGLE_SIMULATION = auto()
+    class Control:
+        def __init__(self):
+            self.control_state = STATE.STATE_WAITING
+            self.model_flag: int = 0
+            self.x = 0.0
+            self.y = 0.0
+            self.yaw = 0.0
 
-class Control:
-    def __init__(self):
-        self.control_state = STATE.STATE_WAITING
-        self.model_flag: int = 0
-        self.x = 0.0
-        self.y = 0.0
-        self.yaw = 0.0
+    class Depth:
+        def __init__(self):
+            self.width = 64
+            self.height = 64
+            self.near_clip = 0.0
+            self.far_clip = 2.0
+            # Model input is normalized to [-0.5, 0.5]; 0.5 represents far_clip.
+            self.image = torch.full((1, 1, self.height, self.width), 0.5, dtype=torch.float32)
 
 class ModelParams:
     def __init__(self):

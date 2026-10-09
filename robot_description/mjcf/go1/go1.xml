@@ -25,7 +25,7 @@
             <geom size="0.0005 0.0005 0.0005" pos="-0.01592 -0.06659 -0.00617" type="box" contype="0" conaffinity="0" group="1" rgba="0.8 0 0 0" />
             <geom size="0.0005 0.0005 0.0005" pos="-0.01592 -0.06659 -0.00617" type="box" rgba="0.8 0 0 0" />
             <site name="imu" pos="0 0 0"/>
-            <body name="depth_camera" pos="0.28 0 0.12" euler="0 0.43633 0">  
+            <body name="depth_camera" pos="0.28 0 0.12" euler="0 0.349066 0">
                 <!-- 相对于这个body的位置和方向 不要更改 !fovy the same as D435i for 4:3 aspect ratio -->
                 <camera name="depth_camera" pos="0. 0. 0." euler="1.57 -1.57 0" fovy="58"/>
                 <!-- <geom type="box" size="0.01 0.04 0.02" rgba="0. 1.0 0. 0.6"/> -->

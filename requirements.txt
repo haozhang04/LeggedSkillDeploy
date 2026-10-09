@@ -11,3 +11,5 @@ PySDL2
 pysdl2-dll; sys_platform == 'win32'
 rich
 aiohttp
+opencv-python
+pyrealsense2

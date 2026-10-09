@@ -7,7 +7,7 @@ from pathlib import Path
 from src.utils.path_config import PROJECT_ROOT
 from src.scripts.motion_loader import MotionLoader
 from src.scripts.observation_buffer import ObservationBuffer
-from src.scripts.rl_data import LOGGER, STATE, Control, ModelParams, Observations, RobotState
+from src.scripts.rl_data import ModelParams, Observations, RobotState
 from src.utils.math import quat_rotate_inverse
 
 
@@ -116,6 +116,7 @@ class RLPolicy:
         self._init_outputs()
         self._init_history_buffer()
         self.init_motion_loader(state)
+        state.depth.image.fill_(0.5)
         if hasattr(self.model, "reset"):
             self.model.reset()
 
@@ -186,7 +187,7 @@ class RLPolicy:
         # self.output_dof_tau = (self.params.rl_kp * (all_actions_scaled + self.params.default_dof_pos - self.obs.dof_pos) - self.params.rl_kd * self.obs.dof_vel)
         # self.output_dof_tau = torch.clamp(self.output_dof_tau, -self.params.torque_limits, self.params.torque_limits)
 
-    def _forward(self, clamped_obs):
+    def _forward(self, clamped_obs, depth=None):
         """ 模型推理 """        
         if self.policy_name in ["np3o"]:
             history_obs = self.history_obs_buf.get_obs_vec(self.params.observations_history)
@@ -200,6 +201,8 @@ class RLPolicy:
             actions, (weights, latent) = self.model(clamped_obs)
             # print("weights:", weights.detach().cpu().numpy())
             # print("latent:", latent.detach().cpu().numpy())
+        elif self.policy_name == "go1wmp":
+            actions = self.model(clamped_obs, depth)
         elif self.policy_name in ["M20_lab", "g1_loco", "gangnam_style", "dance_102", "dance1_subject2", "go2_loco", "go2_back_filp", "go2_silde_filp", "go2_jump"]:
             actions = self.model(clamped_obs)
         else:
@@ -207,7 +210,7 @@ class RLPolicy:
 
         return actions
 
-    def run_inference(self, robot_state: RobotState, control: Control):
+    def run_inference(self, robot_state: RobotState):
         """ 执行推理 50hz """
         if self.motion_loader is not None:
             motion_time = min(self.rl_time, self.motion_loader.duration)
@@ -217,9 +220,9 @@ class RLPolicy:
         for i in range(3):
             self.obs.ang_vel[0, i] = robot_state.imu.gyroscope[i]
 
-        self.obs.commands[0, 0] = control.x
-        self.obs.commands[0, 1] = control.y
-        self.obs.commands[0, 2] = control.yaw
+        self.obs.commands[0, 0] = robot_state.control.x
+        self.obs.commands[0, 1] = robot_state.control.y
+        self.obs.commands[0, 2] = robot_state.control.yaw
 
         for i in range(4):
             self.obs.base_quat[0, i] = robot_state.imu.quaternion[i]
@@ -230,7 +233,7 @@ class RLPolicy:
 
         # 组合观测 - 推理 - 计算输出
         self.clamped_obs = self._compute_observation()
-        self.obs.actions = self._forward(self.clamped_obs)
+        self.obs.actions = self._forward(self.clamped_obs, robot_state.depth.image)
         self._compute_output(self.obs.actions)
 
         # time

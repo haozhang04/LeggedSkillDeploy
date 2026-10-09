@@ -2,8 +2,8 @@
 
 import time
 import torch
-from src.scripts.rl_data import Control, RobotCommand, RobotState
-from src.scripts.rl_sdk import LOGGER, STATE, RLPolicy
+from src.scripts.rl_data import LOGGER, STATE, RobotCommand, RobotState
+from src.scripts.rl_sdk import RLPolicy
 
 torch.set_num_threads(4)
 torch.set_num_interop_threads(1)
@@ -22,9 +22,6 @@ class RLDeploy:
         self.temp_robot_command = RobotCommand()
         self.robot_state = RobotState()
         self.robot_command = RobotCommand()
-        # 控制接口
-        self.control = Control()
-
         # 状态机
         self.running_state = STATE.STATE_WAITING
         self.now_state = RobotState()
@@ -50,8 +47,8 @@ class RLDeploy:
         self.change_model(0)
 
         # Debug 频率统计
-        # self._enable_hz_logging = True
-        self._enable_hz_logging = False
+        self._enable_hz_logging = True
+        # self._enable_hz_logging = False
         self._loop_count = 0
         self._last_log_time = time.perf_counter()
 
@@ -81,7 +78,7 @@ class RLDeploy:
             return
         if self.policy.rl_time < self.policy.motion_loader.duration:
             return
-        self.control.model_flag = self.auto_return_model_flag
+        self.robot_state.control.model_flag = self.auto_return_model_flag
         
     def _get_state(self):
         """ 读取状态 """
@@ -111,12 +108,13 @@ class RLDeploy:
     def _run_inference(self):
         if self.running_state != STATE.STATE_RL_RUNNING:
             return
-        self.policy.run_inference(self.robot_state, self.control)
+        self.policy.run_inference(self.robot_state)
         self._auto_return_model_when_motion_finished()
 
     def _state_controller(self):
         """ 状态机控制 """
         state = self.robot_state
+        control = state.control
         command = self.robot_command
         
         # WAITING 状态
@@ -124,8 +122,8 @@ class RLDeploy:
             for i in range(self.params.num_of_dofs):
                 command.motor_command.q[i] = state.motor_state.q[i]
             
-            if self.control.control_state == STATE.STATE_POS_GETUP:
-                self.control.control_state = STATE.STATE_WAITING
+            if control.control_state == STATE.STATE_POS_GETUP:
+                control.control_state = STATE.STATE_WAITING
                 self.getup_percent = 0.0
                 for i in range(self.params.num_of_dofs):
                     self.now_state.motor_state.q[i] = state.motor_state.q[i]
@@ -145,18 +143,18 @@ class RLDeploy:
                     command.motor_command.kd[i] = self.params.fixed_kd[0][i].item()
                 print(f"\r{LOGGER.INFO}Getting up {self.getup_percent * 100.0:.1f}%", end="", flush=True)
             
-            if self.control.control_state == STATE.STATE_RL_RUNNING:
-                self.control.control_state = STATE.STATE_WAITING
+            if control.control_state == STATE.STATE_RL_RUNNING:
+                control.control_state = STATE.STATE_WAITING
                 self.running_state = STATE.STATE_RL_RUNNING
                 print(f"\n{LOGGER.INFO}Switching to STATE_RL_RUNNING")
-            elif self.control.control_state == STATE.STATE_POS_GETDOWN:
-                self.control.control_state = STATE.STATE_WAITING
+            elif control.control_state == STATE.STATE_POS_GETDOWN:
+                control.control_state = STATE.STATE_WAITING
                 self.running_state = STATE.STATE_POS_GETDOWN
                 print(f"\n{LOGGER.INFO}Switching to STATE_POS_GETDOWN")
 
         # RL_RUNNING 状态
         elif self.running_state == STATE.STATE_RL_RUNNING:
-            print(f"\r{LOGGER.INFO}RL x:{self.control.x:.2f} y:{self.control.y:.2f} yaw:{self.control.yaw:.2f}", end="", flush=True)
+            print(f"\r{LOGGER.INFO}RL x:{control.x:.2f} y:{control.y:.2f} yaw:{control.yaw:.2f}", end="", flush=True)
             
             num_dofs = self.params.num_of_dofs
             command.motor_command.q[:num_dofs] = self.policy.output_dof_pos[0].detach().numpy()
@@ -165,12 +163,12 @@ class RLDeploy:
             command.motor_command.kp[:num_dofs] = self.params.rl_kp[0].detach().numpy()
             command.motor_command.kd[:num_dofs] = self.params.rl_kd[0].detach().numpy()
             
-            if self.control.control_state == STATE.STATE_POS_GETDOWN:
-                self.control.control_state = STATE.STATE_WAITING
+            if control.control_state == STATE.STATE_POS_GETDOWN:
+                control.control_state = STATE.STATE_WAITING
                 self.running_state = STATE.STATE_POS_GETDOWN
                 print(f"\n{LOGGER.INFO}Switching to STATE_POS_GETDOWN")
-            elif self.control.control_state == STATE.STATE_POS_GETUP:
-                self.control.control_state = STATE.STATE_WAITING
+            elif control.control_state == STATE.STATE_POS_GETUP:
+                control.control_state = STATE.STATE_WAITING
                 self.getup_percent = 0.0
                 for i in range(self.params.num_of_dofs):
                     self.now_state.motor_state.q[i] = state.motor_state.q[i]
@@ -190,7 +188,7 @@ class RLDeploy:
 
     def step(self, inference_times: int):
         """单步执行：修改模型 -> 读取状态 -> 推理 -> 状态机 -> 发送命令."""
-        self.change_model(self.control.model_flag)
+        self.change_model(self.robot_state.control.model_flag)
 
         self._get_state()
 
